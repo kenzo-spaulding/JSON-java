@@ -1,13 +1,15 @@
 # How to run:
+
+To run tests
+
 ```bash
 mvn clean test
 # Runs test cases at the top of the test file at: src/test/java/org/json/junit/XMLTest.java
 ```
 
+To build and use, follow build instructions below in general readme.
 
-
-JSON in Java [package org.json]
-===============================
+# JSON in Java [package org.json]
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.json/json.svg)](https://mvnrepository.com/artifact/org.json/json)
 
@@ -20,13 +22,14 @@ JSON in Java [package org.json]
 The JSON-Java package is a reference implementation that demonstrates how to parse JSON documents into Java objects and how to generate new JSON documents from the Java classes.
 
 Project goals include:
-* Reliable and consistent results
-* Adherence to the JSON specification 
-* Easy to build, use, and include in other projects
-* No external dependencies
-* Fast execution and low memory footprint
-* Maintain backward compatibility
-* Designed and tested to use on Java versions 1.6 - 1.11
+
+- Reliable and consistent results
+- Adherence to the JSON specification
+- Easy to build, use, and include in other projects
+- No external dependencies
+- Fast execution and low memory footprint
+- Maintain backward compatibility
+- Designed and tested to use on Java versions 1.6 - 1.11
 
 The files in this package implement JSON encoders and decoders. The package can also convert between JSON and XML, HTTP headers, Cookies, and CDL.
 
@@ -39,27 +42,30 @@ Bug fixes, code improvements, and unit test coverage changes are welcome! Becaus
 # Build Instructions
 
 The org.json package can be built from the command line, Maven, and Gradle. The unit tests can be executed from Maven, Gradle, or individually in an IDE e.g. Eclipse.
- 
+
 **Building from the command line**
 
-*Build the class files from the package root directory src/main/java*
-````
+_Build the class files from the package root directory src/main/java_
+
+```
 javac org\json\*.java
-````
+```
 
-*Create the jar file in the current directory*
-````
+_Create the jar file in the current directory_
+
+```
 jar cf json-java.jar org/json/*.class
-````
+```
 
-*Compile a program that uses the jar (see example code below)*
-````
-javac -cp .;json-java.jar Test.java 
-````
+_Compile a program that uses the jar (see example code below)_
 
-*Test file contents*
+```
+javac -cp .;json-java.jar Test.java
+```
 
-````
+_Test file contents_
+
+```
 import org.json.JSONObject;
 public class Test {
     public static void main(String args[]){
@@ -67,23 +73,24 @@ public class Test {
        System.out.println(jo.toString());
     }
 }
-````
+```
 
-*Execute the Test file*
-```` 
+_Execute the Test file_
+
+```
 java -cp .;json-java.jar Test
-````
+```
 
-*Expected output*
+_Expected output_
 
-````
+```
 {"abc":"def"}
-````
+```
 
- 
 **Tools to build the package and execute the unit tests**
 
 Execute the test suite with Maven:
+
 ```
 mvn clean test
 ```
@@ -121,10 +128,11 @@ invalid number formats (1.2e6.3) will cause errors as such documents can not be 
 reliably.
 
 Some notable exceptions that the JSON Parser in this library accepts are:
-* Unquoted keys `{ key: "value" }`
-* Unquoted values `{ "key": value }`
-* Unescaped literals like "tab" in string values `{ "key": "value   with an unescaped tab" }`
-* Numbers out of range for `Double` or `Long` are parsed as strings
+
+- Unquoted keys `{ key: "value" }`
+- Unquoted values `{ "key": value }`
+- Unescaped literals like "tab" in string values `{ "key": "value with an unescaped tab" }`
+- Numbers out of range for `Double` or `Long` are parsed as strings
 
 Recent pull requests added a new method `putAll` on the JSONArray. The `putAll` method
 works similarly to other `put` methods in that it does not call `JSONObject.wrap` for items
@@ -145,6 +153,7 @@ For structure consistency, it would be recommended that the above code is change
 to look like 1 of 2 ways.
 
 Option 1:
+
 ```Java
 SomeBean[] myArr = new SomeBean[]{ new SomeBean(1), new SomeBean(2) };
 JSONArray jArr = new JSONArray();
@@ -156,6 +165,7 @@ jArr.putAll(new SomeBean[]{ new SomeBean(3), new SomeBean(4) });
 ```
 
 Option 2:
+
 ```Java
 SomeBean[] myArr = new SomeBean[]{ new SomeBean(1), new SomeBean(2) };
 // these will be wrapped
@@ -167,21 +177,22 @@ jArr.putAll(new JSONArray(new SomeBean[]{ new SomeBean(3), new SomeBean(4) }));
 
 **Unit Test Conventions**
 
-Test filenames should consist of the name of the module being tested, with the suffix "Test". 
+Test filenames should consist of the name of the module being tested, with the suffix "Test".
 For example, <b>Cookie.java</b> is tested by <b>CookieTest.java</b>.
 
 <b>The fundamental issues with JSON-Java testing are:</b><br>
-* <b>JSONObjects</b> are unordered, making simple string comparison ineffective. 
-* Comparisons via **equals()** is not currently supported. Neither <b>JSONArray</b> nor <b>JSONObject</b> override <b>hashCode()</b> or <b>equals()</b>, so comparison defaults to the <b>Object</b> equals(), which is not useful.
-* Access to the <b>JSONArray</b> and <b>JSONObject</b> internal containers for comparison is not currently available.
+
+- <b>JSONObjects</b> are unordered, making simple string comparison ineffective.
+- Comparisons via **equals()** is not currently supported. Neither <b>JSONArray</b> nor <b>JSONObject</b> override <b>hashCode()</b> or <b>equals()</b>, so comparison defaults to the <b>Object</b> equals(), which is not useful.
+- Access to the <b>JSONArray</b> and <b>JSONObject</b> internal containers for comparison is not currently available.
 
 <b>General issues with unit testing are:</b><br>
-* Just writing tests to make coverage goals tends to result in poor tests. 
-* Unit tests are a form of documentation - how a given method works is demonstrated by the test. So for a code reviewer or future developer looking at code a good test helps explain how a function is supposed to work according to the original author. This can be difficult if you are not the original developer.
-*   It is difficult to evaluate unit tests in a vacuum. You also need to see the code being tested to understand if a test is good. 
-* Without unit tests, it is hard to feel confident about the quality of the code, especially when fixing bugs or refactoring. Good tests prevent regressions and keep the intent of the code correct.
-* If you have unit test results along with pull requests, the reviewer has an easier time understanding your code and determining if it works as intended.
 
+- Just writing tests to make coverage goals tends to result in poor tests.
+- Unit tests are a form of documentation - how a given method works is demonstrated by the test. So for a code reviewer or future developer looking at code a good test helps explain how a function is supposed to work according to the original author. This can be difficult if you are not the original developer.
+- It is difficult to evaluate unit tests in a vacuum. You also need to see the code being tested to understand if a test is good.
+- Without unit tests, it is hard to feel confident about the quality of the code, especially when fixing bugs or refactoring. Good tests prevent regressions and keep the intent of the code correct.
+- If you have unit test results along with pull requests, the reviewer has an easier time understanding your code and determining if it works as intended.
 
 # Files
 
@@ -194,8 +205,8 @@ to produce a vector-like object. The object provides methods for manipulating
 its contents, and for producing a JSON compliant array serialization.
 
 **JSONTokener.java**: The `JSONTokener` breaks a text into a sequence of individual
-tokens. It can be constructed from a `String`, `Reader`, or `InputStream`. It also can 
-parse text from a `String`, `Number`, `Boolean` or `null` like `"hello"`, `42`, `true`, 
+tokens. It can be constructed from a `String`, `Reader`, or `InputStream`. It also can
+parse text from a `String`, `Number`, `Boolean` or `null` like `"hello"`, `42`, `true`,
 `null` to produce a simple json object.
 
 **JSONException.java**: The `JSONException` is the standard exception type thrown
@@ -216,7 +227,7 @@ When used on a bean method that would normally be serialized into a `JSONObject`
 overrides the getter-to-key-name logic and uses the value of the annotation. The Bean
 processor will look through the class hierarchy. This means you can use the annotation on
 a base class or interface and the value of the annotation will be used even if the getter
-is overridden in a child class.   
+is overridden in a child class.
 
 **JSONString.java**: The `JSONString` interface requires a `toJSONString` method,
 allowing an object to provide its own serialization.
@@ -226,7 +237,6 @@ building JSON strings.
 
 **JSONWriter.java**: The `JSONWriter` provides a convenient facility for building
 JSON text through a writer.
-
 
 **CDL.java**: `CDL` provides support for converting between JSON and comma
 delimited lists.
@@ -246,14 +256,13 @@ cookie lists.
 
 **XMLTokener.java**: `XMLTokener` extends `JSONTokener` for parsing XML text.
 
-
 # Release history:
 
 JSON-java releases can be found by searching the Maven repository for groupId "org.json"
 and artifactId "json". For example:
 [https://search.maven.org/search?q=g:org.json%20AND%20a:json&core=gav](https://search.maven.org/search?q=g:org.json%20AND%20a:json&core=gav)
 
-~~~
+```
 20201115    Recent commits and first release after project structure change
 
 20200518    Recent commits and snapshot before project structure change
@@ -282,4 +291,4 @@ Contains the latest code as of 7 Aug 2016
 
 20150729    Checkpoint for Maven central repository release. Contains the latest code
 as of 29 July 2015.
-~~~
+```
