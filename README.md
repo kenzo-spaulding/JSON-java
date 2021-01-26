@@ -1,3 +1,11 @@
+# How to run:
+```bash
+mvn clean test
+# Runs test cases at the top of the test file at: src/test/java/org/json/junit/XMLTest.java
+```
+
+
+
 JSON in Java [package org.json]
 ===============================
 
