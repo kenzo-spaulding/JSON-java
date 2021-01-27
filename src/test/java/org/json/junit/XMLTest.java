@@ -108,6 +108,25 @@ public class XMLTest {
     }
 
     @Test
+    public void basicReaderWithPathXML2() {
+        try {
+
+            Reader reader = new FileReader(new File("src/test/java/org/json/junit/books2.xml"));
+            JSONPointer path = new JSONPointer("/catalog/book");
+            JSONObject jsonObject = XML.toJSONObject(reader, path);
+
+            String correct = "{\"tag1\":{\"price\":44.95,\"description\":"
+                    + "\"An in-depth look at creating applications\\n               "
+                    + " with XML.\",\"publish_date\":\"2000-10-01\"},\"author\":\"Ga"
+                    + "mbardella, Matthew\",\"genre\":\"Computer\",\"id\":\"bk101\","
+                    + "\"title\":\"XML Developer's Guide\"}";
+            assertTrue("Inner JSON should be found.", jsonObject.toString().equals(correct));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Test
     public void basicReaderWithPathXMLBooks() {
         try {
             String validJSON = "{\"author\":\"Corets, Eva\",\"price\":5.95,\"genre\":"

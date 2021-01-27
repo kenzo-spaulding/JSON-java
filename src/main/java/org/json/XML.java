@@ -84,16 +84,41 @@ public class XML {
 
     public static JSONObject toJSONObject(Reader reader, JSONPointer path) {
         try {
-            JSONObject jo = new JSONObject();
-            XMLTokener x = new XMLTokener(reader);
-            while (x.more()) {
-                x.skipPast("<");
-                if (x.more()) {
-                    parseToPath(x, jo, null, XMLParserConfiguration.ORIGINAL, path.toString());
+
+            Boolean num = false;
+            String[] tokens = path.toString().split("/");
+            for (String tok : tokens) {
+                try {
+                    Integer.parseInt(tok);
+                    num = true;
+                    break;
+                } catch (NumberFormatException ex) {
                 }
             }
 
-            return (JSONObject) path.queryFrom(jo);
+            if (num) {
+                JSONObject jo = new JSONObject();
+                XMLTokener x = new XMLTokener(reader);
+                while (x.more()) {
+                    x.skipPast("<");
+                    if (x.more()) {
+                        parse(x, jo, null, XMLParserConfiguration.ORIGINAL);
+                    }
+                }
+    
+                return (JSONObject) jo.query(path);
+            } else {
+                JSONObject jo = new JSONObject();
+                XMLTokener x = new XMLTokener(reader);
+                while (x.more()) {
+                    x.skipPast("<");
+                    if (x.more()) {
+                        parseToPath(x, jo, null, XMLParserConfiguration.ORIGINAL, path.toString(), false);
+                    }
+                }
+
+                return (JSONObject) path.queryFrom(jo);
+            }
         } catch (ClassCastException ex) {
             throw new JSONException("Cannot Return JSONArray.");
         }
@@ -348,7 +373,7 @@ public class XML {
      * @throws JSONException
      */
     private static boolean parseToPath(XMLTokener x, JSONObject context, String name, XMLParserConfiguration config,
-            String path) throws JSONException {
+            String path, Boolean save) throws JSONException {
         char c;
         int i;
         JSONObject jsonObject = null;
@@ -356,7 +381,7 @@ public class XML {
         String tagName;
         Object token;
         XMLXsiTypeConverter<?> xmlXsiTypeConverter;
-        Boolean save = false;
+        // Boolean save = false;
 
         // Test for and skip past these forms:
         // <!-- ... -->
@@ -374,7 +399,7 @@ public class XML {
         // =============
 
         String[] pathArr = path.split("/");
-        if (path.length() == 0 || (pathArr.length == 1 && pathArr[0].equals(name)))
+        if ((pathArr.length == 1 && pathArr[0].equals(name)))
             save = true;
 
         // =============
@@ -394,7 +419,7 @@ public class XML {
                 if ("CDATA".equals(token)) {
                     if (x.next() == '[') {
                         string = x.nextCDATA();
-                        if (string.length() > 0) {
+                        if (string.length() > 0 && save) {
                             context.accumulate(config.getcDataTagName(), string);
                         }
                         return false;
@@ -480,8 +505,7 @@ public class XML {
                     // Empty tag <.../>
                     if (x.nextToken() != GT) {
                         throw x.syntaxError("Misshaped tag");
-                    }
-                    if (nilAttributeFound && save) {
+                    } else if (nilAttributeFound) {
                         context.accumulate(tagName, JSONObject.NULL);
                     } else if (jsonObject.length() > 0) {
                         context.accumulate(tagName, jsonObject);
@@ -500,7 +524,7 @@ public class XML {
                                 throw x.syntaxError("Unclosed tag " + tagName);
                             }
                             return false;
-                        } else if (token instanceof String) {
+                        } else if (token instanceof String && save) {
 
                             string = (String) token;
 
@@ -525,7 +549,7 @@ public class XML {
                                     subPath = subPath + pathArr[j] + "/";
                             }
 
-                            if (parseToPath(x, jsonObject, tagName, config, subPath)) {
+                            if (parseToPath(x, jsonObject, tagName, config, subPath, save)) {
                                 if (jsonObject.length() == 0) {
                                     context.accumulate(tagName, "");
                                 } else if (jsonObject.length() == 1
