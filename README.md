@@ -9,6 +9,10 @@ mvn clean test
 
 To build and use, follow build instructions below in general readme.
 
+# Performance Implications:
+
+Having this work during runtime means we do not need to go back through the entire file again to change the keys. Essentially we are halving the work necessary to add these changes to the keys.
+
 # JSON in Java [package org.json]
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.json/json.svg)](https://mvnrepository.com/artifact/org.json/json)

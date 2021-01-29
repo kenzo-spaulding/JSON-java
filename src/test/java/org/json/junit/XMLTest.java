@@ -127,6 +127,102 @@ public class XMLTest {
     }
 
     @Test
+    public void basicReaderWithTagXML() {
+        try {
+            String xmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    + "<addresses xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+                    + "   xsi:noNamespaceSchemaLocation='test.xsd'>\n" + "   <address>\n"
+                    + "       <name>Joe Tester</name>\n" + "       <street>[CDATA[Baker street 5]</street>\n"
+                    + "       <NothingHere/>\n" + "       <TrueValue>true</TrueValue>\n"
+                    + "       <FalseValue>false</FalseValue>\n" + "       <NullValue>null</NullValue>\n"
+                    + "       <PositiveValue>42</PositiveValue>\n" + "       <NegativeValue>-23</NegativeValue>\n"
+                    + "       <DoubleValue>-23.45</DoubleValue>\n" + "       <Nan>-23x.45</Nan>\n"
+                    + "       <ArrayOfNum>1, 2, 3, 4.1, 5.2</ArrayOfNum>\n" + "   </address>\n" + "</addresses>";
+
+            String expectedStr = "{\"swe262_addresses\":{\"swe262_xmlns:xsi\":\"http://www.w3.org/2001/XMLSchema"
+                    + "-instance\",\"swe262_xsi:noNamespaceSchemaLocation\":\"test.xsd\",\"swe262_address\":{\""
+                    + "swe262_NullValue\":null,\"swe262_PositiveValue\":42,\"swe262_NegativeValue\":-23,\"swe262"
+                    + "_street\":\"[CDATA[Baker street 5]\",\"swe262_FalseValue\":false,\"swe262_name\":\"Joe "
+                    + "Tester\",\"swe262_Nan\":\"-23x.45\",\"swe262_TrueValue\":true,\"swe262_DoubleValue\":-23.45"
+                    + ",\"swe262_NothingHere\":\"\",\"swe262_ArrayOfNum\":\"1, 2, 3, 4.1, 5.2\"}}}";
+
+            File tempFile = this.testFolder.newFile("fileToJSONObject.xml");
+            FileWriter fileWriter = new FileWriter(tempFile);
+            try {
+                fileWriter.write(xmlStr);
+            } finally {
+                fileWriter.close();
+            }
+
+            Reader reader = new FileReader(tempFile);
+
+            JSONObject jsonObject = XML.toJSONObject(reader, (String key) -> "swe262_" + key);
+
+            assertTrue("Correct prefixes", jsonObject.toString().equals(expectedStr));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Test
+    public void basicReaderWithTagXML2() {
+        try {
+
+            Reader reader = new FileReader(new File("src/test/java/org/json/junit/books2.xml"));
+            JSONObject jsonObject = XML.toJSONObject(reader, (String key) -> "swe262_" + key);
+
+            String correct = "{\"swe262_catalog\":{\"swe262_mook\":{\"swe262_price\":5.95,\"swe262"
+                    + "_genre\":\"Fantasy\",\"swe262_author\":\"Corets, Eva\",\"swe262_publish_date"
+                    + "\":\"2000-11-17\",\"swe262_look\":{\"swe262_price\":5.95,\"swe262_genre\":"
+                    + "\"Fantasy\",\"swe262_author\":\"Ralls, Kim\",\"swe262_publish_date\":\"2000"
+                    + "-12-16\",\"swe262_title\":\"Midnight Rain\",\"swe262_description\":\"A former"
+                    + " architect battles corporate zombies,\\n                    an evil sorceress"
+                    + ", and her own childhood to become queen\\n                    of the world.\","
+                    + "\"swe262_id\":\"bk102\"},\"swe262_title\":\"Maeve Ascendant\",\"swe262_descrip"
+                    + "tion\":\"After the collapse of a nanotechnology\\n            society in England"
+                    + ", the young survivors lay the\\n            foundation for a new society.\",\""
+                    + "swe262_id\":\"bk103\"},\"swe262_book\":{\"swe262_genre\":\"Computer\",\"swe262"
+                    + "_author\":\"Gambardella, Matthew\",\"swe262_tag1\":{\"swe262_price\":44.95,\""
+                    + "swe262_publish_date\":\"2000-10-01\",\"swe262_description\":\"An in-depth look"
+                    + " at creating applications\\n                with XML.\"},\"swe262_title\":\"XML"
+                    + " Developer\'s Guide\",\"swe262_id\":\"bk101\"}}}";
+
+            assertTrue("Inner JSON should be found.", jsonObject.toString().equals(correct));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Test
+    public void basicReaderWithTagXML3() {
+        try {
+
+            Reader reader = new FileReader(new File("src/test/java/org/json/junit/books.xml"));
+            JSONObject jsonObject = XML.toJSONObject(reader, (String key) -> "swe262_" + key);
+
+            String correct = "{\"swe262_catalog\":{\"swe262_book\":[{\"swe262_price\":44.95,"
+                    + "\"swe262_genre\":\"Computer\",\"swe262_author\":\"Gambardella, Matthew"
+                    + "\",\"swe262_publish_date\":\"2000-10-01\",\"swe262_title\":\"XML Developer"
+                    + "'s Guide\",\"swe262_description\":\"An in-depth look at creating "
+                    + "applications\\n            with XML.\",\"swe262_id\":\"bk101\"},{\""
+                    + "swe262_price\":5.95,\"swe262_genre\":\"Fantasy\",\"swe262_author\":\""
+                    + "Ralls, Kim\",\"swe262_publish_date\":\"2000-12-16\",\"swe262_title\":"
+                    + "\"Midnight Rain\",\"swe262_description\":\"A former architect battles "
+                    + "corporate zombies,\\n            an evil sorceress, and her own childhood"
+                    + " to become queen\\n            of the world.\",\"swe262_id\":\"bk102\"},"
+                    + "{\"swe262_price\":5.95,\"swe262_genre\":\"Fantasy\",\"swe262_author\":\""
+                    + "Corets, Eva\",\"swe262_publish_date\":\"2000-11-17\",\"swe262_title\":\""
+                    + "Maeve Ascendant\",\"swe262_description\":\"After the collapse of a "
+                    + "nanotechnology\\n            society in England, the young survivors lay "
+                    + "the\\n            foundation for a new society.\",\"swe262_id\":\"bk103\"}]}}";
+
+            assertTrue("Inner JSON should be found.", jsonObject.toString().equals(correct));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Test
     public void basicReaderWithPathXMLBooks() {
         try {
             String validJSON = "{\"author\":\"Corets, Eva\",\"price\":5.95,\"genre\":"
