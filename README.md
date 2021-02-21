@@ -1,10 +1,12 @@
 # How to run:
 
 To run tests
+Changes for Milestone 4 made to JSONObject.java & JSONObjectTest.java
 
 ```bash
 mvn clean test
 # Runs test cases at the top of the test file at: src/test/java/org/json/junit/XMLTest.java
+# Also Runs test cases at the top of the test file at: src/test/java/org/json/junit/JSONObjectTest.java
 ```
 
 To build and use, follow build instructions below in general readme.
