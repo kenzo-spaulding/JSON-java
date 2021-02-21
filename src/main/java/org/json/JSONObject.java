@@ -39,13 +39,16 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its external
@@ -458,6 +461,75 @@ public class JSONObject {
      */
     protected JSONObject(int initialCapacity){
         this.map = new HashMap<String, Object>(initialCapacity);
+    }
+
+    public Stream<JSONObject> toStream() {
+        Set<JSONObject> js = new HashSet<>();
+        JSONObject j = this;
+        String path = "";
+        descend(j, js, path);
+
+        return js.stream();
+    }
+
+    private void descend(JSONObject root, Set<JSONObject> js, String path) {
+        Map<String, JSONObject> subRoots = new HashMap<>();
+        Map<String, JSONArray> subArrRoots = new HashMap<>();
+        Map<String, Object> leaves = new HashMap<>();
+        for (String k : root.keySet()) {
+            Object obj = root.get(k);
+            if (obj instanceof JSONObject) {
+                subRoots.put(k, (JSONObject) obj);
+            } else if (obj instanceof JSONArray) {
+                subArrRoots.put(k, (JSONArray) obj);
+            } else {
+                leaves.put(k, obj);
+            }
+        }
+
+        if (path.isEmpty())
+            leaves.put("_path", "/");
+        else
+            leaves.put("_path", path);
+
+        if (leaves.size() > 1)
+            js.add(new JSONObject(leaves));
+
+        for (Entry<String, JSONObject> subRoot : subRoots.entrySet()) 
+            descend(subRoot.getValue(), js, path + "/" + subRoot.getKey());
+        
+
+        for (Entry<String, JSONArray> subRoot: subArrRoots.entrySet()) 
+            descend(subRoot.getValue(), js, path + "/" + subRoot.getKey());
+    }
+
+    private void descend(JSONArray root, Set<JSONObject> js, String path) {
+        Map<String, JSONObject> subRoots = new HashMap<>();
+        Map<String, JSONArray> subArrRoots = new HashMap<>();
+        Map<String, Object> leaves = new HashMap<>();
+
+        for (int i = 0; i < root.length(); i++) {
+            if (root.get(i) instanceof JSONObject) {
+                subRoots.put(Integer.toString(i), (JSONObject) root.get(i));
+            } else if (root.get(i) instanceof JSONArray) {
+                subArrRoots.put(Integer.toString(i), (JSONArray) root.get(i));
+            } else {
+                leaves.put(Integer.toString(i), root.get(i));
+            }
+        }
+        if (path.isEmpty())
+            leaves.put("_path", "/");
+        else
+            leaves.put("_path", path);
+
+        if (leaves.size() > 1)
+            js.add(new JSONObject(leaves));
+
+        for (Entry<String, JSONObject> subRoot : subRoots.entrySet()) 
+            descend(subRoot.getValue(), js, path + "/" + subRoot.getKey());
+
+        for (Entry<String, JSONArray> subRoot: subArrRoots.entrySet()) 
+            descend(subRoot.getValue(), js, path + "/" + subRoot.getKey());
     }
 
     /**

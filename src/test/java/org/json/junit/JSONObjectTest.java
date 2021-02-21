@@ -45,11 +45,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.CDL;
 import org.json.JSONArray;
@@ -126,6 +129,43 @@ public class JSONObjectTest {
         
         assertTrue("Should eval to true", obj1.similar(obj4));
         
+    }
+
+    @Test
+    public void testStreamFilters() {
+        JSONObject obj = XML.toJSONObject("<Books><book><title>AAA</title><author>ASmith</author></book><book><title>BBB</title><author>BSmith</author></book></Books>");
+        Set<String> titles = obj.toStream().filter(o -> o.has("title")).map(o -> o.getString("title")).collect(Collectors.toSet());
+        Set<String> expected = new HashSet<>();
+        expected.add("AAA");
+        expected.add("BBB");
+
+        assertTrue("Should have 2 titles", titles.size() == 2);
+        assertTrue("Titles should be [BBB, AAA]", titles.equals(expected));
+    }
+
+    @Test
+    public void testStreamCollectors() {
+        JSONObject obj = XML.toJSONObject("<Books><book><title>AAA</title><author>ASmith</author></book><book><title>BBB</title><author>BSmith</author></book></Books>");
+        Set<JSONObject> objs = obj.toStream().collect(Collectors.toSet());
+        Set<String> expected = new HashSet<>();
+        Map<String, Object> t1 = new HashMap<>();
+        t1.put("title", "AAA");
+        t1.put("author", "ASmith");
+        t1.put("_path", "/Books/book/0");
+
+        Map<String, Object> t2 = new HashMap<>();
+        t2.put("title", "BBB");
+        t2.put("author", "BSmith");
+        t2.put("_path", "/Books/book/1");
+
+        expected.add((new JSONObject(t1)).toString());
+        expected.add((new JSONObject(t2)).toString());
+
+        assertTrue("Should have 2 leaves", objs.size() == 2);
+
+        for (JSONObject object : objs) {
+            assertTrue("Leaves not proper", expected.contains(object.toString()));
+        }
     }
     
     @Test
