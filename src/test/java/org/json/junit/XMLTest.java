@@ -29,6 +29,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FileReader;
@@ -40,6 +42,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,8 +56,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import jdk.internal.jline.internal.TestAccessible;
-
 /**
  * Tests for JSON-Java XML.java Note: noSpace() will be tested by JSONMLTest
  */
@@ -66,6 +67,36 @@ public class XMLTest {
      */
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
+
+    @Test
+    public void basicAsyncRead() {
+        try {
+            String validJSON = "{\"catalog\":{\"book\":[{\"author\":\"Gambard"
+                    + "ella, Matthew\",\"price\":44.95,\"genre\":\"Computer\",\"descript"
+                    + "ion\":\"An in-depth look at creating applications\\n            w"
+                    + "ith XML.\",\"id\":\"bk101\",\"title\":\"XML Developer's Guide\",\""
+                    + "publish_date\":\"2000-10-01\"},{\"author\":\"Ralls, Kim\",\"price\""
+                    + ":5.95,\"genre\":\"Fantasy\",\"description\":\"A former architect bat"
+                    + "tles corporate zombies,\\n            an evil sorceress, and her own"
+                    + " childhood to become queen\\n            of the world.\",\"id\":\"bk1"
+                    + "02\",\"title\":\"Midnight Rain\",\"publish_date\":\"2000-12-16\"},{\"a"
+                    + "uthor\":\"Corets, Eva\",\"price\":5.95,\"genre\":\"Fantasy\",\"descri"
+                    + "ption\":\"After the collapse of a nanotechnology\\n            societ"
+                    + "y in England, the young survivors lay the\\n            foundation f"
+                    + "or a new society.\",\"id\":\"bk103\",\"title\":\"Maeve Ascendant\",\"p"
+                    + "ublish_date\":\"2000-11-17\"}]}}";
+            File xmlFile = new File("src/test/java/org/json/junit/books.xml");
+            Reader reader = new FileReader(xmlFile);
+
+            Future<JSONObject> future = XML.toJSONObjectAsync(reader);
+
+            assertTrue("Inner JSON should be found.",
+                    future.get().toString().equals((new JSONObject(validJSON).toString())));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void basicReaderWithPathXML() {

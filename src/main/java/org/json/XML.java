@@ -31,6 +31,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -82,6 +87,24 @@ public class XML {
     public static final String NULL_ATTR = "xsi:nil";
 
     public static final String TYPE_ATTR = "xsi:type";
+
+    public static Future<JSONObject> toJSONObjectAsync(Reader reader) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        AsyncJSON task = new AsyncJSON(reader);
+        return executor.submit(task);
+    }
+
+    private static class AsyncJSON implements Callable<JSONObject> {
+        private Reader reader;
+
+        public AsyncJSON(Reader reader) {
+            this.reader = reader;
+        }
+
+        public JSONObject call() {
+            return toJSONObject(reader);
+        }
+    }
 
     public static JSONObject toJSONObject(Reader reader, JSONPointer path) {
         try {
@@ -278,29 +301,29 @@ public class XML {
         StringBuilder sb = new StringBuilder(string.length());
         for (final int cp : codePointIterator(string)) {
             switch (cp) {
-                case '&':
-                    sb.append("&amp;");
-                    break;
-                case '<':
-                    sb.append("&lt;");
-                    break;
-                case '>':
-                    sb.append("&gt;");
-                    break;
-                case '"':
-                    sb.append("&quot;");
-                    break;
-                case '\'':
-                    sb.append("&apos;");
-                    break;
-                default:
-                    if (mustEscape(cp)) {
-                        sb.append("&#x");
-                        sb.append(Integer.toHexString(cp));
-                        sb.append(';');
-                    } else {
-                        sb.appendCodePoint(cp);
-                    }
+            case '&':
+                sb.append("&amp;");
+                break;
+            case '<':
+                sb.append("&lt;");
+                break;
+            case '>':
+                sb.append("&gt;");
+                break;
+            case '"':
+                sb.append("&quot;");
+                break;
+            case '\'':
+                sb.append("&apos;");
+                break;
+            default:
+                if (mustEscape(cp)) {
+                    sb.append("&#x");
+                    sb.append(Integer.toHexString(cp));
+                    sb.append(';');
+                } else {
+                    sb.appendCodePoint(cp);
+                }
             }
         }
         return sb.toString();
